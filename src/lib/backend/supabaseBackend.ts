@@ -111,12 +111,12 @@ export async function createSupabaseBackend(
         const up = await sb.auth.updateUser({ password: patch.newPassword });
         if (up.error) return { ok: false, error: up.error.message };
       }
-      const row: Record<string, unknown> = { id: data.user.id };
+      const row: Record<string, unknown> = {};
       if (patch.nickname !== undefined) row.nickname = patch.nickname;
       if (patch.avatarUrl !== undefined) row.avatar_url = patch.avatarUrl;
       if (patch.avatarColor !== undefined) row.avatar_color = patch.avatarColor;
-      if (Object.keys(row).length === 1) return { ok: true };   // 비밀번호만 바꾼 경우
-      const { error } = await sb.from('profiles').upsert(row, { onConflict: 'id' });
+      if (Object.keys(row).length === 0) return { ok: true };   // 비밀번호만 바꾼 경우
+      const { error } = await sb.from('profiles').update(row).eq('id', data.user.id);
       return error ? { ok: false, error: error.message } : { ok: true };
     },
 
